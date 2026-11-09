@@ -1,73 +1,76 @@
-# React + TypeScript + Vite
+# Business Management
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema de gestión para un negocio pequeño: inventario, ventas, compras, clientes y proveedores, con un panel de indicadores y dos roles de usuario.
 
-Currently, two official plugins are available:
+> En desarrollo: el frontend y la conexión con Supabase están construidos módulo por módulo.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Módulos
 
-## React Compiler
+| Módulo | Qué hace |
+|---|---|
+| **Panel** | Indicadores del negocio: ventas del mes, ventas de hoy, productos en stock y clientes activos |
+| **Productos** | Catálogo con categorías, precios y stock; alta y edición en un modal |
+| **Ventas** | Registro de ventas con varios productos, estado (borrador, completada, cancelada), método de pago (efectivo, tarjeta, transferencia o crédito) y detalle de cada venta |
+| **Compras** | Compras a proveedores con su detalle y estado |
+| **Clientes** | Directorio de clientes |
+| **Proveedores** | Directorio de proveedores |
+| **Usuarios** | Gestión de cuentas, solo para administradores |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Roles
 
-## Expanding the ESLint configuration
+- **admin:** acceso completo, incluida la gestión de usuarios.
+- **vendedor:** opera ventas, productos y clientes.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+El rol vive en la tabla `profiles` de Supabase y se lee al iniciar sesión (`AuthContext`). Todas las páginas exigen sesión iniciada, y el menú muestra las secciones de administración solo a los administradores.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Modelo de datos
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Tablas en Supabase (Postgres):
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `profiles` y `categories`
+- `products`
+- `customers` y `suppliers`
+- `sales` y `sale_details`
+- `purchases` y `purchase_details`
+
+Los tipos de TypeScript de cada tabla están en [`src/types/database.tsx`](src/types/database.tsx).
+
+## Stack
+
+- **React 19** con **TypeScript** y **Vite 7**
+- **React Router 7** para la navegación
+- **Supabase** para base de datos y autenticación
+- **Tailwind CSS v4** y **lucide-react** para la interfaz
+
+## Estructura
+
+```
+src/
+  pages/        una página por módulo (panel, productos, ventas, compras, clientes, proveedores, usuarios, login)
+  components/   listas y modales de cada módulo, y el layout principal
+  hooks/        acceso a datos por módulo (useProducts, useSales, usePurchases, useCustomers, useSuppliers)
+  context/      sesión y rol del usuario
+  lib/          cliente de Supabase
+  types/        tipos de la base de datos
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Correr en local
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Instala las dependencias:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+   ```bash
+   npm install
+   ```
+
+2. Crea un archivo `.env` con las variables de tu proyecto de Supabase:
+
+   ```env
+   VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+   VITE_SUPABASE_ANON_KEY=tu-anon-key
+   ```
+
+3. Arranca el servidor:
+
+   ```bash
+   npm run dev
+   ```
